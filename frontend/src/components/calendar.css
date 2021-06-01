@@ -157,12 +157,11 @@ main {
   border-right: none;
 }
 
-.calendar .body .cell .number {
-  position: absolute;
+.day {
+  position: relative;
   font-size: 82.5%;
-  line-height: 1;
-  top: 0.75em;
-  right: 0.75em;
+  text-align: end;
+  padding-right: 0.75em;
   font-weight: 700;
 }
 
@@ -203,8 +202,9 @@ main {
 .event-data {
   color: white;
   border-radius: 3px;
-  margin: 2px;
-  padding-left: 2px;
+  margin: 0.2em;
+  padding-left: 1rem;
+  font-weight: 400;
 }
 .event-data:hover {
   background-color: rgb(121, 141, 160);

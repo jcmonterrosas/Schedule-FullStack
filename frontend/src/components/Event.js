@@ -17,6 +17,7 @@ class AddEventModal extends Component {
       eventToEdit: this.props.eventToEdit,
       handleFormSubmit: this.props.handleFormSubmit,
       selectedDate: this.props.selectedDate,
+      loadEvents: this.props.loadEvents,
       colors: [],
       cities: [],
     };
@@ -35,8 +36,8 @@ class AddEventModal extends Component {
   deleteEvent = async () => {
     const { _id } = this.state.eventToEdit;
     await axios.delete(`http://localhost:4000/event/${_id}`);
+    this.state.loadEvents();
     this.state.toggleModal();
-    window.location.replace("");
   };
 
   componentDidMount = async () => {
@@ -48,8 +49,7 @@ class AddEventModal extends Component {
     e.preventDefault();
     let { _id, name, description, place, color, date, startTime, endTime } =
       this.state.eventToEdit;
-    // console.log(_id, name, description, place, color, date, startTime, endTime);
-    place = place != null ? place : "Bogotá";
+    place = place != null ? place : "";
     color = color != null ? color : "Chartreuse";
     date = date != null ? date : format(this.state.selectedDate, "yyyy-MM-dd");
     startTime = startTime != null ? startTime : new Date(date.concat("T00:00"));
@@ -170,6 +170,7 @@ class AddEventModal extends Component {
                     defaultValue={name}
                     fullWidth
                     margin="normal"
+                    inputProps={{ maxLength: 19 }}
                     onChange={(e) => this.setName(e.target.value)}
                   />
                 </Grid>
@@ -198,6 +199,7 @@ class AddEventModal extends Component {
                     defaultValue={description}
                     fullWidth
                     margin="normal"
+                    inputProps={{ maxLength: 45 }}
                     onChange={(e) => this.setDescription(e.target.value)}
                   />
                 </Grid>
@@ -262,11 +264,10 @@ class AddEventModal extends Component {
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
-                    required
                     id={color != null ? color : "color"}
                     select
                     label="Color"
-                    defaultValue={color != null ? color : ""}
+                    defaultValue={color != null ? color : "Chartreuse"}
                     variant="outlined"
                     fullWidth
                     margin="normal"

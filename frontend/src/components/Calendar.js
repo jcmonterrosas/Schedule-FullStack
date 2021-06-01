@@ -15,9 +15,10 @@ import AddIcon from "@material-ui/icons/Add";
 import Snackbar from "@material-ui/core/Snackbar";
 import Alert from "@material-ui/lab/Alert";
 import AddEventModal from "./Event";
+import DayEvents from "./DayEvents";
 import "./calendar.css";
 
-const EVENT_LIMIT = 5;
+const EVENT_LIMIT = 4;
 
 class Calendar extends Component {
   constructor() {
@@ -27,9 +28,11 @@ class Calendar extends Component {
       selectedDate: new Date(),
       events: [],
       showEventModal: false,
+      showDayModal: false,
       eventToEdit: {},
+      eventsOfDay: [],
       alertError: "",
-      open: false
+      open: false,
     };
   }
 
@@ -63,13 +66,12 @@ class Calendar extends Component {
         endTime: updatedEvent.endTime,
       })
       .then((response) => {
-        // console.log(response);
         this.state.alertError = "";
-        window.location.replace("");
+        this.loadEvents();
+        this.toggleModal();
       })
       .catch((error) => {
-        this.state.alertError = error.response.data;
-        this.toggleError();
+        this.toggleError(error.response.data);
       });
   };
 
@@ -86,11 +88,11 @@ class Calendar extends Component {
       })
       .then((response) => {
         this.state.alertError = "";
-        window.location.replace("");
+        this.loadEvents();
+        this.toggleModal();
       })
       .catch((error) => {
-        this.state.alertError = error.response.data;
-        this.toggleError();
+        this.toggleError(error.response.data);
       });
   };
 
@@ -151,13 +153,17 @@ class Calendar extends Component {
             }`}
             key={day}
           >
-            <span className="number">{formattedDate}</span>
+            <div className="day" onClick={() => this.onDayEventClick(cloneDay)}>
+              {formattedDate}
+            </div>
             {isSameMonth(day, monthStart) ? (
               <div>
                 <div>
                   {events
                     .filter((e) => isSameDay(cloneDay, new Date(e.startTime)))
-                    .sort((a, b) => (a.time > b.time ? 1 : -1))
+                    .sort((a, b) =>
+                      a.startTime.getTime() > b.startTime.getTime() ? 1 : -1
+                    )
                     .map((e, i) => (
                       <div
                         onClick={() => this.editEvent(e)}
@@ -197,6 +203,11 @@ class Calendar extends Component {
   }
 
   editEvent = (e) => {
+    const { showDayModal } = this.state;
+    console.log(showDayModal)
+    if (showDayModal) {
+      this.toggleDay();
+    }
     this.setState({ eventToEdit: e }, this.toggleModal);
   };
 
@@ -209,9 +220,14 @@ class Calendar extends Component {
     this.setState(newState);
   };
 
-  toggleError = () => {
-    const { alertError } = this.state;
-    const newState = { alertError: alertError, open: true };
+  toggleDay = () => {
+    const { showDayModal } = this.state;
+    const newState = { showDayModal: !showDayModal };
+    this.setState(newState);
+  };
+
+  toggleError = (err) => {
+    const newState = { alertError: err, open: true };
     this.setState(newState);
   };
 
@@ -221,10 +237,21 @@ class Calendar extends Component {
     if (
       events.filter((e) => isSameDay(date, e.startTime)).length >= EVENT_LIMIT
     ) {
-      alert(`You have reached maximum events limit for the selected day`);
+      this.toggleError( "You have reached maximum events limit for the selected day");
     } else {
       this.setState({ selectedDate: date }, this.toggleModal);
     }
+  };
+
+  onDayEventClick = (date) => {
+    const { events } = this.state;
+    this.setState(
+      {
+        selectedDate: date,
+        eventsOfDay: events.filter((e) => isSameDay(date, e.startTime)),
+      },
+      this.toggleDay
+    );
   };
 
   handleFormSubmit = ({
@@ -238,6 +265,12 @@ class Calendar extends Component {
     endTime,
   }) => {
     if (_id) {
+      if (!isSameDay(startTime, new Date(date.concat("T00:00")))) {
+        startTime = new Date(
+          date.concat("T".concat(format(startTime, "HH:mm")))
+        );
+        endTime = new Date(date.concat("T".concat(format(endTime, "HH:mm"))));
+      }
       const updatedEvent = {
         _id,
         name,
@@ -249,7 +282,7 @@ class Calendar extends Component {
         endTime,
       };
       this.setState({}, () => {
-        if(this.state.alertError !== "") this.toggleModal();
+        if (this.state.alertError !== "") this.toggleModal();
         this.updateEvents(updatedEvent);
       });
     } else {
@@ -263,14 +296,14 @@ class Calendar extends Component {
         endTime,
       };
       this.setState({}, () => {
-        if(this.state.alertError !== "") this.toggleModal();
+        if (this.state.alertError !== "") this.toggleModal();
         this.createEvent(newEvent);
       });
     }
   };
 
   render() {
-    const { showEventModal, eventToEdit } = this.state;
+    const { showEventModal, showDayModal, eventToEdit } = this.state;
     let { alertError } = this.state;
     return (
       <div className="calendar">
@@ -290,6 +323,16 @@ class Calendar extends Component {
             handleFormSubmit={this.handleFormSubmit}
             eventToEdit={eventToEdit}
             selectedDate={this.state.selectedDate}
+            loadEvents={this.loadEvents}
+          />
+        )}
+        {showDayModal && (
+          <DayEvents
+            showModal={showDayModal}
+            toggleModal={this.toggleDay}
+            selectedDate={this.state.selectedDate}
+            events={this.state.eventsOfDay}
+            editEvent={this.editEvent}
           />
         )}
         {this.renderDays()}
