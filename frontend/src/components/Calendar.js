@@ -12,6 +12,8 @@ import {
 } from "date-fns";
 import { Fab } from "@material-ui/core";
 import AddIcon from "@material-ui/icons/Add";
+import Snackbar from "@material-ui/core/Snackbar";
+import Alert from "@material-ui/lab/Alert";
 import AddEventModal from "./Event";
 import "./calendar.css";
 
@@ -26,8 +28,14 @@ class Calendar extends Component {
       events: [],
       showEventModal: false,
       eventToEdit: {},
+      alertError: "",
+      open: false
     };
   }
+
+  handleCloseError = () => {
+    this.setState({ alertError: "", open: false });
+  };
 
   loadEvents = async () => {
     const res = await axios.get("http://localhost:4000/event");
@@ -56,10 +64,12 @@ class Calendar extends Component {
       })
       .then((response) => {
         // console.log(response);
+        this.state.alertError = "";
         window.location.replace("");
       })
       .catch((error) => {
-        console.log(error);
+        this.state.alertError = error.response.data;
+        this.toggleError();
       });
   };
 
@@ -75,11 +85,12 @@ class Calendar extends Component {
         endTime: newEvent.endTime,
       })
       .then((response) => {
-        // console.log(response);
-        window.location.replace('');
+        this.state.alertError = "";
+        window.location.replace("");
       })
       .catch((error) => {
-        console.log(error);
+        this.state.alertError = error.response.data;
+        this.toggleError();
       });
   };
 
@@ -198,12 +209,17 @@ class Calendar extends Component {
     this.setState(newState);
   };
 
+  toggleError = () => {
+    const { alertError } = this.state;
+    const newState = { alertError: alertError, open: true };
+    this.setState(newState);
+  };
+
   onAddEventClick = (date) => {
     this.setState({ selectedDate: date });
     const { events } = this.state;
     if (
-      events.filter((e) => isSameDay(date, e.startTime)).length >=
-      EVENT_LIMIT
+      events.filter((e) => isSameDay(date, e.startTime)).length >= EVENT_LIMIT
     ) {
       alert(`You have reached maximum events limit for the selected day`);
     } else {
@@ -233,7 +249,7 @@ class Calendar extends Component {
         endTime,
       };
       this.setState({}, () => {
-        this.toggleModal();
+        if(this.state.alertError !== "") this.toggleModal();
         this.updateEvents(updatedEvent);
       });
     } else {
@@ -247,7 +263,7 @@ class Calendar extends Component {
         endTime,
       };
       this.setState({}, () => {
-        this.toggleModal();
+        if(this.state.alertError !== "") this.toggleModal();
         this.createEvent(newEvent);
       });
     }
@@ -255,8 +271,18 @@ class Calendar extends Component {
 
   render() {
     const { showEventModal, eventToEdit } = this.state;
+    let { alertError } = this.state;
     return (
       <div className="calendar">
+        <Snackbar
+          open={this.state.open}
+          autoHideDuration={4000}
+          onClose={this.handleCloseError}
+        >
+          <Alert onClose={this.handleCloseError} severity="error">
+            {alertError}
+          </Alert>
+        </Snackbar>
         {showEventModal && (
           <AddEventModal
             showModal={showEventModal}

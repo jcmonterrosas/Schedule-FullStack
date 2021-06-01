@@ -34,27 +34,26 @@ class AddEventModal extends Component {
 
   deleteEvent = async () => {
     const { _id } = this.state.eventToEdit;
-    const res = await axios.delete(`http://localhost:4000/event/${_id}`);
+    await axios.delete(`http://localhost:4000/event/${_id}`);
     this.state.toggleModal();
-    window.location.replace('');
-  }
+    window.location.replace("");
+  };
 
   componentDidMount = async () => {
     await this.loadColors();
     await this.loadCities();
   };
 
-
   submitForm = (e) => {
     e.preventDefault();
     let { _id, name, description, place, color, date, startTime, endTime } =
       this.state.eventToEdit;
     // console.log(_id, name, description, place, color, date, startTime, endTime);
-    place = (place != null) ? place : "Bogotá";
-    color = (color != null) ? color : "Chartreuse";
-    date = (date != null) ? date : format(this.state.selectedDate, "yyyy-MM-dd");
-    startTime = (startTime != null) ? startTime : new Date(date.concat("T00:00"));
-    endTime = (endTime != null) ? endTime : new Date(date.concat("T00:30"));
+    place = place != null ? place : "Bogotá";
+    color = color != null ? color : "Chartreuse";
+    date = date != null ? date : format(this.state.selectedDate, "yyyy-MM-dd");
+    startTime = startTime != null ? startTime : new Date(date.concat("T00:00"));
+    endTime = endTime != null ? endTime : new Date(date.concat("T00:30"));
     this.state.handleFormSubmit({
       _id,
       name,
@@ -149,22 +148,16 @@ class AddEventModal extends Component {
   };
 
   render() {
-    const { name, description, place, color, date, startTime, endTime } =
+    const { _id, name, description, place, color, date, startTime, endTime } =
       this.state.eventToEdit;
-    // console.log(startTime, endTime);
-    const colors = this.state.colors;
-    const cities = this.state.cities;
     return (
       <div>
-        <Modal
-          aria-labelledby="simple-modal-title"
-          aria-describedby="simple-modal-description"
-          open={this.state.showModal}
-          onClose={this.state.toggleModal}
-        >
+        <Modal open={this.state.showModal} onClose={this.state.toggleModal}>
           <div className="paper add-event-modal">
             <center>
-              <h2 id="simple-modal-title">Edit Event Data</h2>
+              <h2 id="simple-modal-title">
+                {_id ? "Edit Event" : "Create Event"}
+              </h2>
             </center>
             <form onSubmit={this.submitForm}>
               <Grid container spacing={2}>
@@ -254,13 +247,13 @@ class AddEventModal extends Component {
                     id={place != null ? place : "place"}
                     select
                     label="Place"
-                    defaultValue={place != null ? place : "Bogotá"}
+                    defaultValue={place != null ? place : ""}
                     variant="outlined"
                     fullWidth
                     margin="normal"
                     onChange={(e) => this.setPlace(e.target.value)}
                   >
-                    {cities.map((option) => (
+                    {this.state.cities.map((option) => (
                       <MenuItem key={option._id} value={option._id}>
                         {option._id}
                       </MenuItem>
@@ -273,41 +266,39 @@ class AddEventModal extends Component {
                     id={color != null ? color : "color"}
                     select
                     label="Color"
-                    defaultValue={color != null ? color : "Chartreuse"}
+                    defaultValue={color != null ? color : ""}
                     variant="outlined"
                     fullWidth
                     margin="normal"
                     onChange={(e) => this.setColor(e.target.value)}
                   >
-                    {colors.map((option) => (
+                    {this.state.colors.map((option) => (
                       <MenuItem key={option._id} value={option._id}>
                         {option._id}
                       </MenuItem>
                     ))}
                   </TextField>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid item xs={_id ? 6 : 12}>
                   <center>
-                    <Button
-                      type="submit"
-                      variant="contained"
-                      color="primary"
-                    >
+                    <Button type="submit" variant="contained" color="primary">
                       Save Event Data
                     </Button>
                   </center>
                 </Grid>
-                <Grid item xs={6}>
-                  <center>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={this.deleteEvent}
-                    >
-                      Delete Event Data
-                    </Button>
-                  </center>
-                </Grid>
+                {_id && (
+                  <Grid item xs={6}>
+                    <center>
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        onClick={this.deleteEvent}
+                      >
+                        Delete Event Data
+                      </Button>
+                    </center>
+                  </Grid>
+                )}
               </Grid>
             </form>
           </div>

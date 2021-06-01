@@ -65,17 +65,15 @@ const createEvent = async (req, res) => {
     case 1:
       return res
         .status(400)
-        .json(
-          "La hora de finalización no puede ser anterior a la hora de inicio."
-        );
+        .send("The end time cannot be earlier than the start time.");
     case 2:
       return res
         .status(400)
-        .json("No se permiten eventos que abarquen dos días diferentes.");
+        .send("Events covering two different days are not allowed.");
     case 3:
-      return res.status(303).json("Ya existe un evento en este horario.");
+      return res.status(303).send("There is already an event at this time.");
     case 4:
-      return res.status(303).json("El evento se traslapa.");
+      return res.status(303).send("The event is overlapping.");
   }
 
   const newEvent = new Event(req.body);
@@ -95,19 +93,15 @@ const updateEvent = async (req, res) => {
     case 1:
       return res
         .status(400)
-        .json(
-          "La hora de finalización no puede ser anterior a la hora de inicio."
-        );
+        .send("The end time cannot be earlier than the start time.");
     case 2:
       return res
         .status(400)
-        .json("No se permiten eventos que abarquen dos días diferentes.");
+        .send("Events covering two different days are not allowed.");
     case 3:
-      return res
-        .status(303)
-        .json({ message: "Ya existe un evento en este horario." });
+      return res.status(303).send("There is already an event at this time.");
     case 4:
-      return res.status(303).json({ message: "El evento se traslapa." });
+      return res.status(303).send("The event is overlapping.");
   }
 
   const eventUpdated = await Event.findByIdAndUpdate(req.params.id, req.body, {
