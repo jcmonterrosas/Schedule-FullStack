@@ -6,11 +6,13 @@ Iniciar los servicios de mongodb
 ```bash
 mongod
 ```
-Ejecutar el API
+Instalar modulos e iniciar el API
 ```bash
-npm run dev
+npm install
+npm start
 ```
-Ingresar a la carpeta "frontend" e iniciar el cliente
+Ingresar a la carpeta "frontend", instalar modulos e iniciar el cliente
 ```bash
+npm install
 npm start
 ```
